@@ -1,5 +1,7 @@
 package husky
 
+import "strings"
+
 // Husky struct holds router and context for framework
 type Husky struct {
 	AfterMiddleware  []MiddlewareHandler
@@ -23,20 +25,35 @@ func New() (h *Husky) {
 }
 
 // After adds a handler to be executed after the route handler
-func (h *Husky) After(middleware ...MiddlewareHandler) {
+func (husky *Husky) After(middleware ...MiddlewareHandler) {
 	for i := 0; i < len(middleware); i++ {
-		h.AfterMiddleware = append(h.AfterMiddleware, middleware[i])
+		husky.AfterMiddleware = append(husky.AfterMiddleware, middleware[i])
 	}
 }
 
 // Before adds a handler to be executed before the route handler
-func (h *Husky) Before(middleware ...MiddlewareHandler) {
+func (husky *Husky) Before(middleware ...MiddlewareHandler) {
 	for i := 0; i < len(middleware); i++ {
-		h.BeforeMiddleware = append(h.BeforeMiddleware, middleware[i])
+		husky.BeforeMiddleware = append(husky.BeforeMiddleware, middleware[i])
 	}
 }
 
 // Middlware adds a handler to be executed before the route handler
-func (h *Husky) Middlware(middleware MiddlewareHandler) {
-	h.Middleware = append(h.Middleware, middleware)
+func (husky *Husky) Middlware(middleware MiddlewareHandler) {
+	husky.Middleware = append(husky.Middleware, middleware)
+}
+
+// Group creates a route group with a common prefix
+func (husky *Husky) Group(prefix string, middleware ...MiddlewareHandler) *Group {
+	group := &Group{Prefix: prefix, Husky: husky}
+	group.Middleware = append(group.Middleware, middleware...)
+	return group
+}
+
+func (husky *Husky) add(action string, endpoint string, handler Handler, middleware []MiddlewareHandler) {
+	path := strings.Split(endpoint, "?")
+	husky.Router.Add(action, path[0], func(c Context) error {
+		handler := handler
+		return handler(c)
+	}, middleware)
 }
