@@ -11,18 +11,18 @@ type Router struct {
 
 // Route holds all information about a defined route
 type Route struct {
-	Method     string
-	Handler    Handler
-	Middleware []MiddlewareHandler
-	Path       string
+	Handler    Handler             // main handler
+	Endpoint   string              // endpoint for route
+	Middleware []MiddlewareHandler // array of middleware handlers
+	Verb       string              // http verb
 }
 
 // Add will add a new route to the Router.Routes map
-func (router *Router) Add(method string, path string, handler Handler, middleware []MiddlewareHandler) {
+func (router *Router) Add(verb string, endpoint string, handler Handler, middleware []MiddlewareHandler) {
 	route := Route{
-		Handler: handler,
-		Method:  method,
-		Path:    path,
+		Endpoint: endpoint,
+		Handler:  handler,
+		Verb:     verb,
 	}
 
 	// add middleware handler(s)
@@ -35,10 +35,10 @@ func (router *Router) Add(method string, path string, handler Handler, middlewar
 		router.Routes = make(map[string]map[string]Route)
 	}
 
-	// initialize method
-	if router.Routes[method] == nil {
-		router.Routes[method] = make(map[string]Route)
+	// initialize verb
+	if router.Routes[verb] == nil {
+		router.Routes[verb] = make(map[string]Route)
 	}
 
-	router.Routes[method][method+path] = route
+	router.Routes[verb][verb+endpoint] = route
 }
