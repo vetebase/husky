@@ -43,6 +43,36 @@ func (husky *Husky) Middlware(middleware MiddlewareHandler) {
 	husky.Middleware = append(husky.Middleware, middleware)
 }
 
+// DELETE adds a HTTP DELETE route to router
+func (husky *Husky) DELETE(endpoint string, handler Handler, middleware ...MiddlewareHandler) {
+	husky.add("DELETE", endpoint, handler, middleware)
+}
+
+// GET adds a HTTP GET route to router
+func (husky *Husky) GET(endpoint string, handler Handler, middleware ...MiddlewareHandler) {
+	husky.add("GET", endpoint, handler, middleware)
+}
+
+// OPTIONS adds a HTTP OPTIONS route to router
+func (husky *Husky) OPTIONS(endpoint string, handler Handler, middleware ...MiddlewareHandler) {
+	husky.add("OPTIONS", endpoint, handler, middleware)
+}
+
+// PATCH adds a HTTP PATCH route to router
+func (husky *Husky) PATCH(endpoint string, handler Handler, middleware ...MiddlewareHandler) {
+	husky.add("PATCH", endpoint, handler, middleware)
+}
+
+// POST adds a HTTP POST route to router
+func (husky *Husky) POST(endpoint string, handler Handler, middleware ...MiddlewareHandler) {
+	husky.add("POST", endpoint, handler, middleware)
+}
+
+// PUT adds a HTTP PUT route to router
+func (husky *Husky) PUT(endpoint string, handler Handler, middleware ...MiddlewareHandler) {
+	husky.add("PUT", endpoint, handler, middleware)
+}
+
 // Group creates a route group with a common prefix
 func (husky *Husky) Group(prefix string, middleware ...MiddlewareHandler) *Group {
 	group := &Group{Prefix: prefix, Husky: husky}
@@ -50,9 +80,9 @@ func (husky *Husky) Group(prefix string, middleware ...MiddlewareHandler) *Group
 	return group
 }
 
-func (husky *Husky) add(action string, endpoint string, handler Handler, middleware []MiddlewareHandler) {
+func (husky *Husky) add(verb string, endpoint string, handler Handler, middleware []MiddlewareHandler) {
 	path := strings.Split(endpoint, "?")
-	husky.Router.Add(action, path[0], func(c Context) error {
+	husky.Router.Add(verb, path[0], func(c Context) error {
 		handler := handler
 		return handler(c)
 	}, middleware)
