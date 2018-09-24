@@ -1,6 +1,13 @@
 package husky
 
-import "strings"
+import (
+	"fmt"
+	"log"
+	"net/http"
+	"strings"
+
+	"github.com/vetbase/husky/config"
+)
 
 // Husky struct holds router and context for framework
 type Husky struct {
@@ -78,6 +85,30 @@ func (husky *Husky) Group(prefix string, middleware ...MiddlewareHandler) *Group
 	group := &Group{Prefix: prefix, Husky: husky}
 	group.Middleware = append(group.Middleware, middleware...)
 	return group
+}
+
+// Start initates the framework to start listening for requests
+func (husky *Husky) Start() {
+	server := h.server()
+	if err := server.ListenAndServe(); err != nil {
+		log.Printf("Server error: %s", err)
+	}
+}
+
+func (husky *Husky) server() *http.Server {
+	config := config.Load()
+
+	name := config["NAME"]
+	port := config["PORT"]
+
+	server := &http.Server{
+		Addr:    ":" + port,
+		Handler: h,
+	}
+
+	fmt.Println("==> Running " + name + " on port: " + port)
+
+	return server
 }
 
 func (husky *Husky) add(verb string, endpoint string, handler Handler, middleware []MiddlewareHandler) {
