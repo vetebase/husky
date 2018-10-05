@@ -13,16 +13,16 @@ import (
 type Husky struct {
 	AfterMiddleware  []MiddlewareHandler
 	BeforeMiddleware []MiddlewareHandler
-	Context          Context
+	Context          CTX
 	Middleware       []MiddlewareHandler
 	Router           *Router
 }
 
 // Handler basic function to router handlers
-type Handler func(Context) error
+type Handler func(CTX) error
 
 // MiddlewareHandler defines a function to process middleware
-type MiddlewareHandler func(Handler) Handler
+type MiddlewareHandler func(CTX) error
 
 // New creates a new service
 func New() (h *Husky) {
@@ -32,6 +32,7 @@ func New() (h *Husky) {
 }
 
 // After adds a handler to be executed after the route handler
+// Executed if route is found or not
 func (husky *Husky) After(middleware ...MiddlewareHandler) {
 	for i := 0; i < len(middleware); i++ {
 		husky.AfterMiddleware = append(husky.AfterMiddleware, middleware[i])
@@ -39,6 +40,7 @@ func (husky *Husky) After(middleware ...MiddlewareHandler) {
 }
 
 // Before adds a handler to be executed before the route handler
+// Executed if route is found or not
 func (husky *Husky) Before(middleware ...MiddlewareHandler) {
 	for i := 0; i < len(middleware); i++ {
 		husky.BeforeMiddleware = append(husky.BeforeMiddleware, middleware[i])
@@ -89,7 +91,7 @@ func (husky *Husky) Group(prefix string, middleware ...MiddlewareHandler) *Group
 
 // Start initates the framework to start listening for requests
 func (husky *Husky) Start() {
-	server := h.server()
+	server := husky.server()
 	if err := server.ListenAndServe(); err != nil {
 		log.Printf("Server error: %s", err)
 	}
@@ -103,7 +105,7 @@ func (husky *Husky) server() *http.Server {
 
 	server := &http.Server{
 		Addr:    ":" + port,
-		Handler: h,
+		Handler: husky,
 	}
 
 	fmt.Println("==> Running " + name + " on port: " + port)
@@ -111,9 +113,41 @@ func (husky *Husky) server() *http.Server {
 	return server
 }
 
+// NewContext creates new Context struct
+func (husky *Husky) NewContext(w http.ResponseWriter, r *http.Request) CTX {
+	return CTX{
+		Request:  r,
+		Response: NewResponse(w),
+	}
+}
+
+func (husky *Husky) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// create context
+	husky.Context = husky.NewContext(w, r)
+
+	// execute BeforeMiddleware
+	if len(husky.BeforeMiddleware) > 0 {
+		for i := 0; i < len(husky.BeforeMiddleware); i++ {
+			husky.BeforeMiddleware[i](husky.Context)
+		}
+	}
+
+	// create new context for route
+	husky.Context = husky.NewContext(w, r)
+
+	// execute AfterMiddleware
+	if len(husky.AfterMiddleware) > 0 {
+		for i := 0; i < len(husky.AfterMiddleware); i++ {
+			husky.AfterMiddleware[i](husky.Context)
+		}
+	}
+
+	return
+}
+
 func (husky *Husky) add(verb string, endpoint string, handler Handler, middleware []MiddlewareHandler) {
 	path := strings.Split(endpoint, "?")
-	husky.Router.Add(verb, path[0], func(c Context) error {
+	husky.Router.Add(verb, path[0], func(c CTX) error {
 		handler := handler
 		return handler(c)
 	}, middleware)
