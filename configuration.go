@@ -6,7 +6,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Config handles a Husky service's configuration
+// Configuration handles a Husky service's configuration
 type Configuration struct{}
 
 // Load reads and returns a .env file as a map
