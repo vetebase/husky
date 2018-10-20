@@ -7,15 +7,9 @@
   revision = "23d116af351c84513e1946b527c88823e476be13"
   version = "v1.3.0"
 
-[[projects]]
-  branch = "master"
-  name = "github.com/vetbase/husky"
-  packages = ["config"]
-  revision = "592c259e530c83c99ff7cfd5ae886a40ef04eb4f"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bd6f6d261a92bf54163093ebdb18ff924e698157b065b291f1fbdb2acb722c2c"
+  inputs-digest = "2d900f38d6bd5713a3179959f77f2a5f74ac4855573712d914a96d832327a1e4"
   solver-name = "gps-cdcl"
   solver-version = 1

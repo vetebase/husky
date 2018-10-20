@@ -5,8 +5,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-
-	"github.com/vetbase/husky/config"
 )
 
 // Husky struct holds router and context for framework
@@ -104,7 +102,7 @@ func (husky *Husky) server() *http.Server {
 	port := config["PORT"]
 
 	server := &http.Server{
-		Addr:    ":" + port,
+		Addr:    ":8080",
 		Handler: husky,
 	}
 
