@@ -96,7 +96,7 @@ func (husky *Husky) Start() {
 }
 
 func (husky *Husky) server() *http.Server {
-	config := config.Load()
+	config := Config.Load()
 
 	name := config["NAME"]
 	port := config["PORT"]
