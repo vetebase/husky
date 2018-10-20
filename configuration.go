@@ -7,13 +7,13 @@ import (
 )
 
 // Config handles a Husky service's configuration
-type Config struct{}
+type Configuration struct{}
 
 // Load reads and returns a .env file as a map
-func (config *Config) Load() map[string]string {
-	c, err := godotenv.Read()
+func (configuration *Configuration) Load() map[string]string {
+	config, err := godotenv.Read()
 	if err != nil {
 		log.Fatal("ERROR: Could not load .env file")
 	}
-	return c
+	return config
 }

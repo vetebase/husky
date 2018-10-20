@@ -11,6 +11,7 @@ import (
 type Husky struct {
 	AfterMiddleware  []MiddlewareHandler
 	BeforeMiddleware []MiddlewareHandler
+	Config           Configuration
 	Context          CTX
 	Middleware       []MiddlewareHandler
 	Router           *Router
@@ -96,7 +97,7 @@ func (husky *Husky) Start() {
 }
 
 func (husky *Husky) server() *http.Server {
-	config := Config.Load()
+	config := husky.Config.Load()
 
 	name := config["NAME"]
 	port := config["PORT"]
