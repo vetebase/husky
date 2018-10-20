@@ -12,16 +12,16 @@ type Husky struct {
 	AfterMiddleware  []MiddlewareHandler
 	BeforeMiddleware []MiddlewareHandler
 	Config           Configuration
-	Context          CTX
+	Context          *CTX
 	Middleware       []MiddlewareHandler
 	Router           *Router
 }
 
 // Handler basic function to router handlers
-type Handler func(CTX) error
+type Handler func(*CTX) error
 
 // MiddlewareHandler defines a function to process middleware
-type MiddlewareHandler func(CTX) error
+type MiddlewareHandler func(*CTX) error
 
 // New creates a new service
 func New() (h *Husky) {
@@ -113,8 +113,8 @@ func (husky *Husky) server() *http.Server {
 }
 
 // NewContext creates new Context struct
-func (husky *Husky) NewContext(w http.ResponseWriter, r *http.Request) CTX {
-	return CTX{
+func (husky *Husky) NewContext(w http.ResponseWriter, r *http.Request) *CTX {
+	return &CTX{
 		Request:  r,
 		Response: NewResponse(w),
 	}
@@ -146,7 +146,7 @@ func (husky *Husky) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (husky *Husky) add(verb string, endpoint string, handler Handler, middleware []MiddlewareHandler) {
 	path := strings.Split(endpoint, "?")
-	husky.Router.Add(verb, path[0], func(c CTX) error {
+	husky.Router.Add(verb, path[0], func(c *CTX) error {
 		handler := handler
 		return handler(c)
 	}, middleware)
