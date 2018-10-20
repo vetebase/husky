@@ -18,7 +18,7 @@ type Husky struct {
 }
 
 // Handler basic function to router handlers
-type Handler func(*CTX) error
+type Handler func(Context) error
 
 // MiddlewareHandler defines a function to process middleware
 type MiddlewareHandler func(*CTX) error
@@ -146,7 +146,7 @@ func (husky *Husky) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (husky *Husky) add(verb string, endpoint string, handler Handler, middleware []MiddlewareHandler) {
 	path := strings.Split(endpoint, "?")
-	husky.Router.Add(verb, path[0], func(c *CTX) error {
+	husky.Router.Add(verb, path[0], func(c Context) error {
 		handler := handler
 		return handler(c)
 	}, middleware)
