@@ -1,6 +1,7 @@
 package husky
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -18,10 +19,21 @@ type Husky struct {
 }
 
 // Handler basic function to router handlers
-type Handler func(Context) error
+type Handler func(*CTX) error
 
 // MiddlewareHandler defines a function to process middleware
-type MiddlewareHandler func(*CTX) error
+type MiddlewareHandler func(Handler) Handler
+
+// NotFoundHandler default 404 handler for not found routes
+func NotFoundHandler(ctx *CTX) (err error) {
+	b, _ := json.Marshal("Not Found")
+
+	ctx.Response.Header().Set("Content-Type", "application/json")
+	ctx.Response.WriteHeader(404)
+	_, err = ctx.Response.Write([]byte(b))
+
+	return
+}
 
 // New creates a new service
 func New() (h *Husky) {
@@ -123,28 +135,51 @@ func (husky *Husky) NewContext(w http.ResponseWriter, r *http.Request) *CTX {
 func (husky *Husky) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// create context
 	husky.Context = husky.NewContext(w, r)
+	var handler Handler
 
 	// execute BeforeMiddleware
 	if len(husky.BeforeMiddleware) > 0 {
 		for i := 0; i < len(husky.BeforeMiddleware); i++ {
-			husky.BeforeMiddleware[i](husky.Context)
+			husky.BeforeMiddleware[i](handler)
 		}
+	}
+
+	// execute handler
+	if found, route := husky.Router.FindRoute(husky.Context); found {
+		handler := func(*CTX) error {
+			handler := route.Handler
+
+			// execute middleware chain
+			if len(husky.Middleware) > 0 {
+				for i := 0; i < len(husky.Middleware); i++ {
+					handler = husky.Middleware[i](handler)
+				}
+			}
+
+			// execute route
+			if err := handler(husky.Context); err != nil {
+				panic(err)
+			}
+
+			return nil
+		}
+
+		handler(husky.Context)
 	}
 
 	// execute AfterMiddleware
 	if len(husky.AfterMiddleware) > 0 {
 		for i := 0; i < len(husky.AfterMiddleware); i++ {
-			husky.AfterMiddleware[i](husky.Context)
+			husky.AfterMiddleware[i](handler)
 		}
 	}
 
+	// route was not found
+	NotFoundHandler(husky.Context)
 	return
 }
 
 func (husky *Husky) add(verb string, endpoint string, handler Handler, middleware []MiddlewareHandler) {
 	path := strings.Split(endpoint, "?")
-	husky.Router.Add(verb, path[0], func(c Context) error {
-		handler := handler
-		return handler(c)
-	}, middleware)
+	husky.Router.Add(verb, path[0], handler, middleware)
 }

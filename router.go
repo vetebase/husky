@@ -50,35 +50,37 @@ func (router *Router) Add(verb string, endpoint string, handler Handler, middlew
 }
 
 // FindRoute searches for requested route
-func (router *Router) FindRoute(context Context) Route {
+func (router *Router) FindRoute(ctx *CTX) (bool, Route) {
 	// by default route is nil, i.e. Not Found
 	var route Route
+	found := false
 
-	httpMethod := context.Request().Method
-	httpURI := strings.Split(context.Request().URL.String(), "?")
+	httpMethod := ctx.Request.Method
+	httpURI := strings.Split(ctx.Request.URL.String(), "?")
 
 	// routes to search
 	// routes := router.getRoutes(context.Request().Method)
-	for k, v := range router.Routes[context.Request().Method] {
+	for k, v := range router.Routes[ctx.Request.Method] {
 		formatted := format(k)
 
 		regex := regexp.MustCompile(`^` + formatted + `/?$`)
 
 		if regex.MatchString(httpMethod + httpURI[0]) {
+			found = true
 			route = v
 
-			context.AddParams(parseURLParams(httpMethod, httpURI[0], formatted, k))
+			ctx.AddParams(parseURLParams(httpMethod, httpURI[0], formatted, k))
 
-			context.Request().ParseForm()
-			context.AddParams(parseFormParams(context.Request().Form))
+			ctx.Request.ParseForm()
+			ctx.AddParams(parseFormParams(ctx.Request.Form))
 
 			if len(httpURI) > 1 {
-				context.AddParams(parseQueryParams(httpURI[1]))
+				ctx.AddParams(parseQueryParams(httpURI[1]))
 			}
 		}
 	}
 
-	return route
+	return found, route
 }
 
 // func (router *Router) getRoutes(method string) map[string]Route {
