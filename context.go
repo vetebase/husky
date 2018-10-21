@@ -91,3 +91,8 @@ func (ctx *CTX) HTTPError(code int, message string) (err error) {
 	_, err = ctx.Response.Write([]byte(message))
 	return
 }
+
+// SetHeader adds header to response
+func (ctx *CTX) SetHeader(k string, v string) {
+	ctx.Response.Header().Set(k, v)
+}
