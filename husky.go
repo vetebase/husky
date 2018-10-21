@@ -131,9 +131,6 @@ func (husky *Husky) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// create new context for route
-	husky.Context = husky.NewContext(w, r)
-
 	// execute AfterMiddleware
 	if len(husky.AfterMiddleware) > 0 {
 		for i := 0; i < len(husky.AfterMiddleware); i++ {
