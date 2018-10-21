@@ -165,6 +165,9 @@ func (husky *Husky) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		handler(husky.Context)
+	} else {
+		// route was not found
+		NotFoundHandler(husky.Context)
 	}
 
 	// execute AfterMiddleware
@@ -174,8 +177,6 @@ func (husky *Husky) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// route was not found
-	NotFoundHandler(husky.Context)
 	return
 }
 
