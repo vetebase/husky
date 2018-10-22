@@ -12,23 +12,6 @@ type CTX struct {
 	Params   map[string]string
 }
 
-// Context interface
-type Context interface {
-	AddParams(map[string]string)
-	Code(int) error
-	GetHeader(string) string
-	GetParam(string) string
-	GetParams() map[string]string
-	HasParam(string) bool
-	HTTPError(int, string) error
-	JSON(int, interface{}) error
-	Redirect(int, string) error
-	Response() *http.Response
-	Request() *http.Request
-	SetHeader(string, string)
-	String(int, string) error
-}
-
 // AddParams adds parameters to context
 func (ctx *CTX) AddParams(params map[string]string) {
 	if ctx.Params == nil {
@@ -92,7 +75,20 @@ func (ctx *CTX) HTTPError(code int, message string) (err error) {
 	return
 }
 
+// Redirect returns a HTTP code
+func (ctx *CTX) Redirect(code int, uri string) (err error) {
+	http.Redirect(ctx.Response.Writer, ctx.Request, uri, code)
+	return nil
+}
+
 // SetHeader adds header to response
 func (ctx *CTX) SetHeader(k string, v string) {
 	ctx.Response.Header().Set(k, v)
+}
+
+func (ctx *CTX) String(code int, s string) (err error) {
+	ctx.Response.Header().Set("Content-Type", "text/html;charset=utf-8")
+	ctx.Response.WriteHeader(code)
+	_, err = ctx.Response.Write([]byte(s))
+	return
 }
