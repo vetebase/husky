@@ -2,9 +2,9 @@ package husky
 
 // Group holds information about the route group
 type Group struct {
-	Husky      *Husky
-	Middleware []MiddlewareHandler
-	Prefix     string
+	Husky              *Husky
+	MiddlewareHandlers []MiddlewareHandler
+	Prefix             string
 }
 
 // GET adds a HTTP Get method to the group
@@ -30,6 +30,12 @@ func (g *Group) PUT(endpoint string, handler Handler, middleware ...MiddlewareHa
 // DELETE adds a HTTP DELETE method to the group
 func (g *Group) DELETE(endpoint string, handler Handler, middleware ...MiddlewareHandler) {
 	g.add("DELETE", endpoint, handler, middleware)
+}
+
+// Middleware adds a middleware handler to be executed after route is found
+// but before the handler is executed
+func (g *Group) Middleware(m MiddlewareHandler) {
+	g.MiddlewareHandlers = append(g.MiddlewareHandlers, m)
 }
 
 func (g *Group) add(verb string, endpoint string, handler Handler, middleware []MiddlewareHandler) {

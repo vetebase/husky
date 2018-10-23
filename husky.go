@@ -101,7 +101,7 @@ func (husky *Husky) PUT(endpoint string, handler Handler, middleware ...Middlewa
 // Group creates a route group with a common prefix
 func (husky *Husky) Group(prefix string, middleware ...MiddlewareHandler) *Group {
 	group := &Group{Prefix: prefix, Husky: husky}
-	group.Middleware = append(group.Middleware, middleware...)
+	group.MiddlewareHandlers = append(group.MiddlewareHandlers, middleware...)
 	return group
 }
 
