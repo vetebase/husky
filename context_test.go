@@ -1,6 +1,7 @@
 package husky
 
 import (
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -16,6 +17,10 @@ type user struct {
 
 const JSON = `{"id":1,"name":"John Adams"}`
 
+func SampleMethod(ctx CTX) error {
+	return ctx.JSON(200, "message")
+}
+
 func TestContext(t *testing.T) {
 	h := New()
 
@@ -29,4 +34,119 @@ func TestContext(t *testing.T) {
 
 	// Request
 	assert.NotNil(t, c.Request)
+}
+func TestJSONResponse(t *testing.T) {
+	h := New()
+
+	r, _ := http.NewRequest("GET", "/", strings.NewReader(JSON))
+	w := httptest.NewRecorder()
+
+	c := h.NewContext(w, r)
+
+	err := c.JSON(200, user{1, "John Adams"})
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, 200, w.Code)
+	}
+}
+
+func TestJSONErrorResponse(t *testing.T) {
+	h := New()
+
+	r, _ := http.NewRequest("GET", "/", strings.NewReader(JSON))
+	w := httptest.NewRecorder()
+
+	c := h.NewContext(w, r)
+
+	err := c.JSON(200, math.Inf(1))
+
+	assert.Error(t, err)
+}
+
+func TestStringResponse(t *testing.T) {
+	h := New()
+
+	r, _ := http.NewRequest("GET", "/", strings.NewReader(JSON))
+	w := httptest.NewRecorder()
+
+	c := h.NewContext(w, r)
+
+	err := c.String(200, "this is a test")
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, 200, w.Code)
+	}
+}
+
+func TestErrorResponse(t *testing.T) {
+	h := New()
+
+	r, _ := http.NewRequest("GET", "/", strings.NewReader(JSON))
+	w := httptest.NewRecorder()
+
+	c := h.NewContext(w, r)
+
+	err := c.HTTPError(500, "this is a test")
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, 500, w.Code)
+	}
+}
+
+func TestAddingParams(t *testing.T) {
+	h := New()
+
+	r, _ := http.NewRequest("GET", "/", strings.NewReader(JSON))
+	w := httptest.NewRecorder()
+
+	c := h.NewContext(w, r)
+
+	params := make(map[string]string)
+	params["key1"] = "value"
+	params["key2"] = "value"
+
+	c.AddParams(params)
+
+	assert.Equal(t, len(c.GetParams()), 2)
+	assert.Equal(t, c.GetParam("key1"), "value")
+}
+
+func TestSettingHeaders(t *testing.T) {
+	h := New()
+
+	r, _ := http.NewRequest("GET", "/", strings.NewReader(JSON))
+	w := httptest.NewRecorder()
+
+	c := h.NewContext(w, r)
+	c.SetHeader("Content-Type", "text/html;charset=utf-8")
+
+	assert.Equal(t, c.Response.Header().Get("Content-Type"), "text/html;charset=utf-8")
+}
+
+func TestGettingHeaders(t *testing.T) {
+	h := New()
+
+	r, _ := http.NewRequest("GET", "/", strings.NewReader(JSON))
+	w := httptest.NewRecorder()
+
+	c := h.NewContext(w, r)
+
+	c.Request.Header.Set("Content-Type", "text/html;charset=utf-8")
+
+	assert.Equal(t, c.GetHeader("Content-Type"), "text/html;charset=utf-8")
+}
+
+func TestRedirect(t *testing.T) {
+	h := New()
+
+	r, _ := http.NewRequest("GET", "/", strings.NewReader(JSON))
+	w := httptest.NewRecorder()
+
+	c := h.NewContext(w, r)
+
+	err := c.Redirect(301, "/")
+
+	if assert.NoError(t, err) {
+		assert.Equal(t, 301, w.Code)
+	}
 }
