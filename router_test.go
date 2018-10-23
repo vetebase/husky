@@ -1,7 +1,10 @@
 package husky
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -66,4 +69,15 @@ func TestGetRoutesReturnsEmptyIfRouteNotFound(t *testing.T) {
 	found := h.Router.GetRoutes("POST")
 
 	assert.Empty(t, found)
+}
+
+func TestRootPathReturnsEmptyMap(t *testing.T) {
+	h := New()
+
+	r, _ := http.NewRequest("GET", "/", strings.NewReader(JSON))
+	w := httptest.NewRecorder()
+
+	h.Context = h.NewContext(w, r)
+
+	assert.Empty(t, h.Context.GetParams())
 }
