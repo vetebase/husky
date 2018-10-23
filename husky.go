@@ -36,10 +36,15 @@ func NotFoundHandler(ctx *CTX) (err error) {
 }
 
 // New creates a new service
-func New() (h *Husky) {
+func New() (husky *Husky) {
 	return &Husky{
 		Router: new(Router),
 	}
+}
+
+// GetContext returns current context
+func (husky *Husky) GetContext() *CTX {
+	return husky.Context
 }
 
 // After adds a handler to be executed after the route handler
