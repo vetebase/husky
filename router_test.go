@@ -80,4 +80,5 @@ func TestRootPathReturnsEmptyMap(t *testing.T) {
 	h.Context = h.NewContext(w, r)
 
 	assert.Empty(t, h.Context.GetParams())
+	assert.True(t, reflect.TypeOf(h.Context.GetParams()).String() == "map[string]string")
 }
