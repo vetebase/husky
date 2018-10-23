@@ -146,3 +146,14 @@ func parseFormParams(form map[string][]string) map[string]string {
 
 	return params
 }
+
+// GetRoutes returns the routes of a specific http verb
+func (router *Router) GetRoutes(method string) map[string]Route {
+	route := make(map[string]Route)
+
+	if val, exists := router.Routes[method]; exists {
+		return val
+	}
+
+	return route
+}
