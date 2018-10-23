@@ -17,7 +17,7 @@ type user struct {
 
 const JSON = `{"id":1,"name":"John Adams"}`
 
-func SampleMethod(ctx CTX) error {
+func SampleMethod(ctx *CTX) error {
 	return ctx.JSON(200, "message")
 }
 
@@ -149,4 +149,29 @@ func TestRedirect(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, 301, w.Code)
 	}
+}
+
+func TestHasParam(t *testing.T) {
+	g := New()
+
+	g.GET("/uri", SampleMethod)
+
+	r, _ := http.NewRequest("GET", "/uri?query1=1&query2=2", strings.NewReader(JSON))
+	w := httptest.NewRecorder()
+	g.ServeHTTP(w, r)
+
+	assert.True(t, g.GetContext().HasParam("query1"))
+	assert.True(t, g.GetContext().HasParam("query2"))
+}
+
+func TestCodeFunc(t *testing.T) {
+	g := New()
+
+	g.GET("/uri", SampleMethod)
+
+	r, _ := http.NewRequest("GET", "/", strings.NewReader(JSON))
+	w := httptest.NewRecorder()
+	g.ServeHTTP(w, r)
+
+	assert.Nil(t, g.GetContext().Code(200))
 }
